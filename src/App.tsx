@@ -11,6 +11,8 @@ import {
   type Component,
 } from 'solid-js';
 
+import { listen } from '@tauri-apps/api/event';
+
 import AbsenceWizard from './components/AbsenceWizard';
 import ConflictModal from './components/ConflictModal';
 import Header from './components/Header';
@@ -42,6 +44,7 @@ import {
 } from './lib/fileStore';
 import { fetchHolidayNames, resolveRules } from './lib/holidays';
 import { loadLocal, normalizeDoc } from './lib/storage';
+import { checkForUpdate, isProd } from './lib/updater';
 import { defaultDoc } from './model/defaults';
 import type { TimesheetDoc } from './model/types';
 import { TimesheetProvider, useTimesheet } from './store/context';
@@ -208,6 +211,21 @@ const App: Component = () => {
     return p.kind === 'welcome' ? p.error : undefined;
   };
 
+  // Auto-update: production build only. Check shortly after launch, every 6h,
+  // and on demand from the native menu. Never runs in `tauri dev`.
+  onMount(() => {
+    if (!isProd()) return;
+    const t = setTimeout(() => void checkForUpdate(false), 3000);
+    const iv = setInterval(() => void checkForUpdate(false), 6 * 60 * 60 * 1000);
+    let unlisten: (() => void) | undefined;
+    void listen('menu:check-update', () => void checkForUpdate(true)).then((u) => (unlisten = u));
+    onCleanup(() => {
+      clearTimeout(t);
+      clearInterval(iv);
+      unlisten?.();
+    });
+  });
+
   onMount(async () => {
     if (!desktop) {
       // Plain-browser dev mode: persist to localStorage, no file picker.
@@ -265,6 +283,9 @@ const App: Component = () => {
         </div>
       )}
     >
+      <Show when={import.meta.env.DEV}>
+        <div class="dev-banner">DEV BUILD</div>
+      </Show>
       <Switch>
         <Match when={phase().kind === 'loading'}>
         <div class="app">

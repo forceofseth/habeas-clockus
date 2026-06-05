@@ -59,10 +59,56 @@ fn set_dock_icon() {
     }
 }
 
+// Production-only native menu with a "check for updates" item. In `tauri dev`
+// (debug) this is not installed, so the updater menu only exists in release.
+#[cfg(not(debug_assertions))]
+fn setup_menu(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    use tauri::menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder};
+    use tauri::Emitter;
+
+    let handle = app.handle();
+    let check = MenuItemBuilder::with_id("check-update", "Nach Updates suchen…").build(handle)?;
+    let check_id = check.id().clone();
+
+    let app_menu = SubmenuBuilder::new(handle, "Habeas Clockus")
+        .about(None)
+        .separator()
+        .item(&check)
+        .separator()
+        .quit()
+        .build()?;
+    let edit_menu = SubmenuBuilder::new(handle, "Bearbeiten")
+        .undo()
+        .redo()
+        .separator()
+        .cut()
+        .copy()
+        .paste()
+        .select_all()
+        .build()?;
+    let menu = MenuBuilder::new(handle).item(&app_menu).item(&edit_menu).build()?;
+    app.set_menu(menu)?;
+
+    app.on_menu_event(move |app, event| {
+        if event.id() == &check_id {
+            let _ = app.emit("menu:check-update", ());
+        }
+    });
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_process::init());
+
+    #[cfg(desktop)]
+    {
+        builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+    }
+
+    builder
         .setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
@@ -73,6 +119,10 @@ pub fn run() {
             }
             #[cfg(target_os = "macos")]
             set_dock_icon();
+
+            #[cfg(not(debug_assertions))]
+            setup_menu(app)?;
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

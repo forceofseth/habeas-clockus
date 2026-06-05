@@ -164,6 +164,24 @@ input[type='date'] {
   cursor: pointer;
 }
 
+/* ── Dev-build marker ───────────────────────────────────── */
+.dev-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 18px;
+  line-height: 18px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  background: #c026d3;
+  color: #fff;
+  z-index: 9999;
+  pointer-events: none;
+}
+
 /* ── Date picker ────────────────────────────────────────── */
 .datepicker {
   position: relative;

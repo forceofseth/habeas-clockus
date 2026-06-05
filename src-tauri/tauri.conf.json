@@ -28,6 +28,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -37,6 +38,14 @@
     ],
     "android": {
       "debugApplicationIdSuffix": ".debug"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRDODE1QTBDRDE2NDM4RkYKUldUL09HVFJERnFCVEh4ak45K2VhYVNDbHErdWNydjAwMzcydmlkZTRTUnd3aFk0WEFBY0c3OTIK",
+      "endpoints": [
+        "https://github.com/forceofseth/habeas-clockus/releases/latest/download/latest.json"
+      ]
     }
   }
 }
