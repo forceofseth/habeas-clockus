@@ -1,6 +1,6 @@
 {
   "name": "habeas-clockus",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Simple local work-hours tracker (Gleitzeit) for a single employee in Bülach ZH",
   "type": "module",
   "scripts": {
