@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a86a8"/>
+      <stop offset="1" stop-color="#1f5066"/>
+    </linearGradient>
+  </defs>
+
+  <!-- rounded badge -->
+  <rect x="96" y="96" width="832" height="832" rx="190" fill="url(#bg)"/>
+
+  <!-- clock face -->
+  <circle cx="512" cy="512" r="300" fill="#ffffff"/>
+
+  <!-- hour ticks at 12 / 3 / 6 / 9 -->
+  <g stroke="#2f6f8f" stroke-width="28" stroke-linecap="round">
+    <line x1="512" y1="252" x2="512" y2="304"/>
+    <line x1="772" y1="512" x2="720" y2="512"/>
+    <line x1="512" y1="772" x2="512" y2="720"/>
+    <line x1="252" y1="512" x2="304" y2="512"/>
+  </g>
+
+  <!-- hands at a classic 10:10 -->
+  <g stroke="#1f2933" stroke-linecap="round">
+    <line x1="512" y1="512" x2="685" y2="412" stroke-width="34"/>
+    <line x1="512" y1="512" x2="382" y2="437" stroke-width="40"/>
+  </g>
+  <circle cx="512" cy="512" r="36" fill="#1f2933"/>
+</svg>
