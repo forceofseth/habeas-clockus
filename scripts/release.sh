@@ -64,7 +64,15 @@ echo "→ latest.json written"
 ASSETS=("$OUT/$ASSET" "$OUT/$ASSET.sig" "$OUT/latest.json")
 [ -n "$DMG" ] && ASSETS+=("$OUT/Habeas-Clockus-${TAG}-aarch64.dmg")
 
+NOTES="Habeas Clockus ${TAG}
+
+Erstinstallation (App ist ad-hoc-signiert, nicht Apple-notarisiert):
+1. DMG öffnen, App nach /Programme ziehen.
+2. Falls macOS \"beschädigt\" / blockiert meldet, einmalig im Terminal:
+     xattr -dr com.apple.quarantine \"/Applications/Habeas Clockus.app\"
+   (oder Systemeinstellungen → Datenschutz & Sicherheit → \"Trotzdem öffnen\")."
+
 echo "→ creating GitHub release ${TAG}…"
-gh release create "$TAG" "${ASSETS[@]}" --repo "$REPO" --title "$TAG" --notes "Habeas Clockus ${TAG}"
+gh release create "$TAG" "${ASSETS[@]}" --repo "$REPO" --title "$TAG" --notes "$NOTES"
 
 echo "✓ Released ${TAG}. Commit the version bump:  git commit -am '${TAG}' && git tag ${TAG} && git push --tags"

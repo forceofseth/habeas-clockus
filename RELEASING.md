@@ -44,8 +44,16 @@ git commit -am "v0.1.1" && git tag v0.1.1 && git push && git push --tags
 `src-tauri/tauri.conf.json` `version` is the **single source of truth** (semver). Bump it for every
 release; `release.sh` keeps `package.json` in sync.
 
-## Caveat — unsigned app (no Apple Developer account)
+## Caveat — ad-hoc signed, not Apple-notarized
 
-The app is **not Apple-notarized**, only updater-signed. First launch needs **right-click → Öffnen**
-to pass Gatekeeper, and macOS may re-prompt after an auto-update. To remove this entirely you'd add
-Apple code signing + notarization (separate, ~$99/yr Apple Developer account).
+The build is **ad-hoc signed** (`bundle.macOS.signingIdentity = "-"`) but **not Apple-notarized**
+(no Apple Developer account). So a freshly **downloaded** copy is quarantined and macOS shows
+"beschädigt"/blocked on first open. Clear it once per machine:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Habeas Clockus.app"
+```
+
+(or Systemeinstellungen → Datenschutz & Sicherheit → "Trotzdem öffnen"). The GitHub release notes
+include this instruction automatically. To remove the prompt entirely you'd add Apple code signing +
+notarization (~$99/yr Apple Developer account).
