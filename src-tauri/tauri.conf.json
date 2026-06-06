@@ -1,13 +1,13 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Habeas Clockus",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "identifier": "com.habeasclockus.app",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:3000",
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build"
+    "beforeBuildCommand": "npm run prod-build"
   },
   "app": {
     "windows": [

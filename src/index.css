@@ -509,6 +509,11 @@ input[type='date'] {
   border-color: var(--warn);
   background: #fff8ee;
 }
+.time-input:disabled,
+.absence-select:disabled {
+  background: #f1f3f5;
+  cursor: not-allowed;
+}
 
 .day-worked,
 .day-balance {

@@ -1,6 +1,6 @@
 {
   "name": "habeas-clockus",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Simple local work-hours tracker (Gleitzeit) for a single employee in Bülach ZH",
   "type": "module",
   "scripts": {
@@ -8,6 +8,9 @@
     "dev": "vite",
     "build": "vite build",
     "serve": "vite preview",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "prod-build": "vitest run && vite build",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"
@@ -19,7 +22,8 @@
     "typescript": "^5.7.2",
     "vite": "^7.1.4",
     "vite-plugin-singlefile": "^2.3.3",
-    "vite-plugin-solid": "^2.11.8"
+    "vite-plugin-solid": "^2.11.8",
+    "vitest": "^4.1.8"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.0",

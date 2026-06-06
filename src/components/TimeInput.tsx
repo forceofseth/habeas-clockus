@@ -7,6 +7,7 @@ const TimeInput: Component<{
   onChange: (v: string) => void;
   warn?: boolean;
   placeholder?: string;
+  disabled?: boolean;
 }> = (props) => (
   <input
     type="text"
@@ -15,6 +16,7 @@ const TimeInput: Component<{
     inputmode="numeric"
     maxLength={5}
     autocomplete="off"
+    disabled={props.disabled}
     placeholder={props.placeholder ?? '00:00'}
     value={props.value}
     onInput={(e) => {

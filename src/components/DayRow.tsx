@@ -76,14 +76,16 @@ const DayRow: Component<{ date: DateKey; today: DateKey }> = (props) => {
                   value={r().start}
                   onChange={(v) => ts.setRange(props.date, i, 'start', v)}
                   warn={rangeHasWarning(r())}
+                  disabled={beforeStart()}
                 />
                 <span class="field-label">Bis</span>
                 <TimeInput
                   value={r().end}
                   onChange={(v) => ts.setRange(props.date, i, 'end', v)}
                   warn={rangeHasWarning(r())}
+                  disabled={beforeStart()}
                 />
-                <Show when={ranges().length > 1 || r().start !== '' || r().end !== ''}>
+                <Show when={!beforeStart() && (ranges().length > 1 || r().start !== '' || r().end !== '')}>
                   <button
                     class="range-remove"
                     title={ranges().length > 1 ? 'Zeitspanne entfernen' : 'Felder leeren'}
@@ -99,9 +101,11 @@ const DayRow: Component<{ date: DateKey; today: DateKey }> = (props) => {
               </span>
             )}
           </Index>
-          <button class="range-add" onClick={() => ts.addRange(props.date)}>
-            + Zeit
-          </button>
+          <Show when={!beforeStart()}>
+            <button class="range-add" onClick={() => ts.addRange(props.date)}>
+              + Zeit
+            </button>
+          </Show>
         </div>
 
         <div class="break-block">
@@ -113,20 +117,25 @@ const DayRow: Component<{ date: DateKey; today: DateKey }> = (props) => {
                   value={b()}
                   onChange={(v) => ts.setBreak(props.date, i, v)}
                   placeholder="Std:Min"
+                  disabled={beforeStart()}
                 />
-                <button
-                  class="range-remove"
-                  title="Pause entfernen"
-                  onClick={() => ts.removeBreak(props.date, i)}
-                >
-                  ✕
-                </button>
+                <Show when={!beforeStart()}>
+                  <button
+                    class="range-remove"
+                    title="Pause entfernen"
+                    onClick={() => ts.removeBreak(props.date, i)}
+                  >
+                    ✕
+                  </button>
+                </Show>
               </span>
             )}
           </Index>
-          <button class="range-add" onClick={() => ts.addBreak(props.date)}>
-            + Pause
-          </button>
+          <Show when={!beforeStart()}>
+            <button class="range-add" onClick={() => ts.addBreak(props.date)}>
+              + Pause
+            </button>
+          </Show>
         </div>
       </div>
 
@@ -146,6 +155,7 @@ const DayRow: Component<{ date: DateKey; today: DateKey }> = (props) => {
             class="absence-select"
             title="Tagesstatus: Ferien/Krank zählen nicht gegen das Soll; Kompensation zieht den Tag vom Überstundensaldo ab"
             value={dayKind()}
+            disabled={beforeStart()}
             onChange={(e) => ts.setDayKind(props.date, e.currentTarget.value as DayKind)}
           >
             <option value="work">Anwesend</option>
