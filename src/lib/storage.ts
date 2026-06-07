@@ -28,7 +28,8 @@ function normRange(v: unknown): TimeRange {
 function normEntry(v: unknown): DayEntry | null {
   if (!v || typeof v !== 'object') return null;
   const o = v as Record<string, unknown>;
-  const type = o.type === 'absence' ? 'absence' : 'work';
+  const type: DayEntry['type'] =
+    o.type === 'absence' ? 'absence' : o.type === 'compensation' ? 'compensation' : 'work';
 
   let ranges: TimeRange[];
   if (Array.isArray(o.ranges)) {
@@ -45,6 +46,16 @@ function normEntry(v: unknown): DayEntry | null {
 
   const entry: DayEntry = { ranges, breaks, type };
   if (typeof o.note === 'string' && o.note) entry.note = o.note;
+  // Half-day absences keep a fraction in (0, 1); anything else is a whole day.
+  if (
+    type === 'absence' &&
+    typeof o.absenceFraction === 'number' &&
+    Number.isFinite(o.absenceFraction) &&
+    o.absenceFraction > 0 &&
+    o.absenceFraction < 1
+  ) {
+    entry.absenceFraction = o.absenceFraction;
+  }
   return entry;
 }
 

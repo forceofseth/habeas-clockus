@@ -57,7 +57,8 @@ const TotalsBar: Component<{
         class="total total-vacation"
         title={
           vac().applicable
-            ? `${vac().taken} Ferientage bezogen, ${vac().remaining} von ${vac().entitlement} übrig`
+            ? `${vac().taken} Ferientage bezogen, ${vac().remaining} von ${vac().entitlement} übrig` +
+              (vac().carriedOver !== 0 ? ` (inkl. ${vac().carriedOver} übertragen aus Vorjahr)` : '')
             : 'Vor dem Startdatum – nicht berechnet'
         }
       >

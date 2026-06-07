@@ -169,41 +169,50 @@ export function createTimesheetStore(initialDoc: TimesheetDoc, backend: FileBack
     setDoc('days', date, 'breaks', (bs) => bs.filter((_, i) => i !== index));
   }
 
-  function applyKind(date: DateKey, kind: DayKind) {
+  function applyKind(date: DateKey, kind: DayKind, fraction = 1) {
     ensureDay(date);
+    // Only a partial (< 1) absence carries a fraction; whole days clear the field.
+    const half = fraction < 1 ? fraction : undefined;
     switch (kind) {
       case 'ferien':
         setDoc('days', date, 'type', 'absence');
         setDoc('days', date, 'note', 'Ferien');
+        setDoc('days', date, 'absenceFraction', half);
         break;
       case 'krank':
         setDoc('days', date, 'type', 'absence');
         setDoc('days', date, 'note', 'Krank');
+        setDoc('days', date, 'absenceFraction', half);
         break;
       case 'kompensation':
         setDoc('days', date, 'type', 'compensation');
         setDoc('days', date, 'note', 'Kompensation');
+        setDoc('days', date, 'absenceFraction', undefined);
         break;
       default:
         setDoc('days', date, 'type', 'work');
         setDoc('days', date, 'note', undefined);
+        setDoc('days', date, 'absenceFraction', undefined);
     }
   }
 
-  /** Set a single day's status (present / vacation / sick / compensation). */
-  function setDayKind(date: DateKey, kind: DayKind) {
-    applyKind(date, kind);
+  /**
+   * Set a single day's status (present / vacation / sick / compensation).
+   * `fraction` < 1 marks a partial absence (0.5 = half day).
+   */
+  function setDayKind(date: DateKey, kind: DayKind, fraction = 1) {
+    applyKind(date, kind, fraction);
   }
 
   /** Apply a status to every working day in [from, to] (skips weekends/holidays). */
-  function markRange(from: DateKey, to: DateKey, kind: DayKind) {
+  function markRange(from: DateKey, to: DateKey, kind: DayKind, fraction = 1) {
     let start = from;
     let end = to;
     if (start > end) [start, end] = [end, start];
     let cur = start;
     let guard = 0;
     while (cur <= end && guard < 2000) {
-      if (isWorkingDay(cur, isHoliday)) applyKind(cur, kind);
+      if (isWorkingDay(cur, isHoliday)) applyKind(cur, kind, fraction);
       cur = addDays(cur, 1);
       guard++;
     }

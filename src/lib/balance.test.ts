@@ -46,6 +46,18 @@ describe('dayBalance', () => {
     expect(b.balance).toBe(0);
     expect(b.counted).toBe(true);
   });
+  it('half-day absence owes half the target', () => {
+    const halfFerien: DayEntry = {
+      ranges: [{ start: '08:00', end: '12:12' }], // 4h12 = 4.2h worked
+      breaks: [],
+      type: 'absence',
+      note: 'Ferien',
+      absenceFraction: 0.5,
+    };
+    const b = dayBalance('2026-06-15', halfFerien, base, noHol, today);
+    expect(round1(b.target)).toBe(4.2);
+    expect(round1(b.balance)).toBe(0); // worked the other half → nets out
+  });
   it('compensation draws from overtime like a blank past day', () => {
     expect(round1(dayBalance('2026-06-15', empty('compensation'), base, noHol, today).balance)).toBe(-8.4);
     expect(dayBalance('2026-07-06', empty('compensation'), base, noHol, today).balance).toBe(0); // future
@@ -89,26 +101,68 @@ describe('cumulativeBalance', () => {
 });
 
 describe('vacation', () => {
-  const ferien = (): DayEntry => ({ ranges: [], breaks: [], type: 'absence', note: 'Ferien' });
+  const ferien = (fraction?: number): DayEntry => ({
+    ranges: [],
+    breaks: [],
+    type: 'absence',
+    note: 'Ferien',
+    ...(fraction ? { absenceFraction: fraction } : {}),
+  });
   const krank = (): DayEntry => ({ ranges: [], breaks: [], type: 'absence', note: 'Krank' });
 
-  it('vacationTaken counts only Ferien in the year', () => {
-    const days: DayMap = { '2026-03-02': ferien(), '2026-07-01': krank(), '2027-01-05': ferien() };
-    expect(vacationTaken(days, 2026)).toBe(1);
+  it('vacationTaken counts only Ferien in the year; half-days count 0.5', () => {
+    const days: DayMap = {
+      '2026-03-02': ferien(),
+      '2026-03-03': ferien(0.5),
+      '2026-07-01': krank(),
+      '2027-01-05': ferien(),
+    };
+    expect(vacationTaken(days, 2026)).toBe(1.5);
     expect(vacationTaken(days, 2027)).toBe(1);
   });
 
-  it('vacationInfo: start year uses opening remaining; later years full; before = n/a', () => {
+  it('vacationInfo: start year uses opening remaining; before start = n/a', () => {
     const s = { ...base, startDate: '2026-06-15', openingVacationDays: 10, vacationDaysPerYear: 25 };
     const days: DayMap = {
       '2026-03-02': ferien(), // before start -> ignored
       '2026-07-01': ferien(), // after start -> counts
-      '2027-01-05': ferien(),
     };
     const v26 = vacationInfo(days, s, 2026);
-    expect(v26).toMatchObject({ applicable: true, entitlement: 10, taken: 1, remaining: 9 });
-    const v27 = vacationInfo(days, s, 2027);
-    expect(v27).toMatchObject({ applicable: true, entitlement: 25, remaining: 24 });
+    expect(v26).toMatchObject({ applicable: true, entitlement: 10, taken: 1, remaining: 9, carriedOver: 0 });
     expect(vacationInfo(days, s, 2025).applicable).toBe(false);
+  });
+
+  it('carry-over: leftover days roll into the next year', () => {
+    const s = { ...base, startDate: '2026-01-05', openingVacationDays: 25, vacationDaysPerYear: 25 };
+    const days: DayMap = { '2026-07-01': ferien() }; // 1 taken in 2026 → 24 left
+    // 2027: base 25 + carried 24 = 49 available
+    expect(vacationInfo(days, s, 2027)).toMatchObject({
+      entitlement: 49,
+      taken: 0,
+      remaining: 49,
+      carriedOver: 24,
+    });
+  });
+
+  it('carry-over can be negative (overdrawn year)', () => {
+    const s = { ...base, startDate: '2026-01-05', openingVacationDays: 2, vacationDaysPerYear: 25 };
+    // opening 2, three Ferien in 2026 → remaining −1 carried into 2027
+    const days: DayMap = {
+      '2026-03-02': ferien(),
+      '2026-03-03': ferien(),
+      '2026-03-04': ferien(),
+    };
+    expect(vacationInfo(days, s, 2027)).toMatchObject({ entitlement: 24, carriedOver: -1, remaining: 24 });
+  });
+
+  it('no start date: per-year, no carry-over', () => {
+    const days: DayMap = { '2026-03-02': ferien() };
+    expect(vacationInfo(days, base, 2027)).toMatchObject({
+      applicable: true,
+      entitlement: 25,
+      taken: 0,
+      remaining: 25,
+      carriedOver: 0,
+    });
   });
 });

@@ -43,6 +43,21 @@ describe('normalizeDoc', () => {
     expect(d.days['not-a-date']).toBeUndefined();
   });
 
+  it('keeps a valid half-day absenceFraction and preserves compensation days', () => {
+    const d = normalizeDoc({
+      days: {
+        '2026-06-02': { ranges: [], breaks: [], type: 'absence', note: 'Ferien', absenceFraction: 0.5 },
+        '2026-06-03': { ranges: [], breaks: [], type: 'compensation', note: 'Kompensation' },
+        '2026-06-04': { ranges: [], breaks: [], type: 'absence', note: 'Ferien', absenceFraction: 2 },
+        '2026-06-05': { ranges: [], breaks: [], type: 'work', absenceFraction: 0.5 },
+      },
+    });
+    expect(d.days['2026-06-02'].absenceFraction).toBe(0.5); // valid half day kept
+    expect(d.days['2026-06-03'].type).toBe('compensation'); // comp no longer dropped to 'work'
+    expect(d.days['2026-06-04'].absenceFraction).toBeUndefined(); // out-of-range → whole day
+    expect(d.days['2026-06-05'].absenceFraction).toBeUndefined(); // not an absence → ignored
+  });
+
   it('merges stored holiday config with new default rules + keeps toggles + customs', () => {
     const stored = DEFAULT_HOLIDAY_RULES.filter((r) => r.enabled).map((r) =>
       r.id === 'berchtoldstag' ? { ...r, enabled: false } : { ...r },

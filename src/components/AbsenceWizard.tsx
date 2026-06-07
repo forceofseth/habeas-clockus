@@ -1,4 +1,4 @@
-import { createSignal, type Component } from 'solid-js';
+import { createSignal, Show, type Component } from 'solid-js';
 
 import { todayKey } from '../lib/date';
 import type { DayKind } from '../model/types';
@@ -16,12 +16,15 @@ const AbsenceWizard: Component<{ onClose: () => void }> = (props) => {
   const [kind, setKind] = createSignal<Exclude<DayKind, 'work'>>('ferien');
   const [from, setFrom] = createSignal(todayKey());
   const [to, setTo] = createSignal(todayKey());
+  const [half, setHalf] = createSignal(false);
 
   const valid = () => from() !== '' && to() !== '' && from() <= to();
+  // Half days apply to Ferien/Krank only (not Kompensation).
+  const supportsHalf = () => kind() === 'ferien' || kind() === 'krank';
 
   function apply() {
     if (!valid()) return;
-    ts.markRange(from(), to(), kind());
+    ts.markRange(from(), to(), kind(), supportsHalf() && half() ? 0.5 : 1);
     props.onClose();
   }
 
@@ -53,11 +56,25 @@ const AbsenceWizard: Component<{ onClose: () => void }> = (props) => {
           </label>
         </div>
 
+        <Show when={supportsHalf()}>
+          <label class="modal-check">
+            <input
+              type="checkbox"
+              checked={half()}
+              onChange={(e) => setHalf(e.currentTarget.checked)}
+            />
+            Halber Tag (½)
+          </label>
+        </Show>
+
         <p class="hint">
-          Alle Arbeitstage im Zeitraum werden als «{LABEL[kind()]}» markiert.
+          Alle Arbeitstage im Zeitraum werden als «{LABEL[kind()]}
+          {supportsHalf() && half() ? ' ½' : ''}» markiert.
           {kind() === 'kompensation'
             ? ' Diese Tage werden vom Überstundensaldo abgezogen.'
-            : ' Diese Tage zählen nicht gegen das Soll.'}{' '}
+            : supportsHalf() && half()
+              ? ' Sie zählen je zur Hälfte gegen Soll und Ferienanspruch.'
+              : ' Diese Tage zählen nicht gegen das Soll.'}{' '}
           Wochenenden und Feiertage werden übersprungen.
         </p>
 

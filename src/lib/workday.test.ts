@@ -31,4 +31,10 @@ describe('targetHoursFor', () => {
     expect(targetHoursFor('2026-06-08', entry('absence'), settings, noHol)).toBe(0); // absence
     expect(targetHoursFor('2026-06-08', entry('compensation'), settings, noHol)).toBe(8.4); // comp keeps target
   });
+
+  it('a half-day absence keeps half the target', () => {
+    const halfFerien: DayEntry = { ranges: [], breaks: [], type: 'absence', absenceFraction: 0.5 };
+    expect(targetHoursFor('2026-06-08', halfFerien, settings, noHol)).toBeCloseTo(4.2, 5);
+    expect(targetHoursFor('2026-06-06', halfFerien, settings, noHol)).toBe(0); // weekend still 0
+  });
 });

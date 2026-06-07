@@ -31,6 +31,12 @@ export interface DayEntry {
   breaks: string[];
   type: DayType;
   note?: string;
+  /**
+   * Portion of the day taken as the absence: 1 (or absent) = whole day, 0.5 = half day.
+   * Only meaningful for `type === 'absence'`. A half day owes the remaining half of the
+   * target and counts that fraction against the vacation allowance (Ferien).
+   */
+  absenceFraction?: number;
 }
 
 /** Sparse map — only days the user has actually touched exist. */

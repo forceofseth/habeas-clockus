@@ -3,7 +3,7 @@ import { Index, Show, type Component } from 'solid-js';
 import { dayBalance } from '../lib/balance';
 import { formatDayLabel, formatSigned, isWeekend } from '../lib/date';
 import { dayWorkedHours, rangeHasWarning } from '../lib/hours';
-import { isWorkingDay } from '../lib/workday';
+import { absenceFractionOf, isWorkingDay } from '../lib/workday';
 import type { DateKey, DayKind } from '../model/types';
 import { useTimesheet } from '../store/context';
 import TimeInput from './TimeInput';
@@ -26,6 +26,16 @@ const DayRow: Component<{ date: DateKey; today: DateKey }> = (props) => {
     if (e.type === 'compensation') return 'kompensation';
     if (e.type === 'absence') return e.note === 'Krank' ? 'krank' : 'ferien';
     return 'work';
+  };
+  const isHalf = () => isAbsence() && absenceFractionOf(entry()) < 1;
+  // The <select> value encodes the half-day fraction, e.g. "ferien:0.5".
+  const selectValue = (): string => {
+    const k = dayKind();
+    return (k === 'ferien' || k === 'krank') && isHalf() ? `${k}:0.5` : k;
+  };
+  const onKindChange = (value: string) => {
+    const [k, frac] = value.split(':');
+    ts.setDayKind(props.date, k as DayKind, frac ? Number(frac) : 1);
   };
   const beforeStart = () =>
     !!ts.doc.settings.startDate && props.date < ts.doc.settings.startDate;
@@ -59,6 +69,7 @@ const DayRow: Component<{ date: DateKey; today: DateKey }> = (props) => {
             classList={{ 'absence-tag': isAbsence(), 'comp-tag': isCompensation() }}
           >
             {entry()?.note}
+            {isHalf() ? ' ½' : ''}
           </span>
         </Show>
         <Show when={beforeStart()}>
@@ -153,14 +164,16 @@ const DayRow: Component<{ date: DateKey; today: DateKey }> = (props) => {
         <div class="day-absence">
           <select
             class="absence-select"
-            title="Tagesstatus: Ferien/Krank zählen nicht gegen das Soll; Kompensation zieht den Tag vom Überstundensaldo ab"
-            value={dayKind()}
+            title="Tagesstatus: Ferien/Krank zählen nicht gegen das Soll; ein halber Tag zählt nur zur Hälfte. Kompensation zieht den Tag vom Überstundensaldo ab"
+            value={selectValue()}
             disabled={beforeStart()}
-            onChange={(e) => ts.setDayKind(props.date, e.currentTarget.value as DayKind)}
+            onChange={(e) => onKindChange(e.currentTarget.value)}
           >
             <option value="work">Anwesend</option>
             <option value="ferien">Ferien</option>
+            <option value="ferien:0.5">Ferien (½ Tag)</option>
             <option value="krank">Krank</option>
+            <option value="krank:0.5">Krank (½ Tag)</option>
             <option value="kompensation">Kompensation</option>
           </select>
         </div>
