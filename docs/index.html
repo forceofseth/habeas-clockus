@@ -32,6 +32,7 @@
       background: var(--card); border: 1px solid var(--border); border-radius: 16px;
       max-width: 560px; width: 100%; padding: 40px; box-shadow: 0 8px 40px rgba(0,0,0,.18);
     }
+    .logo { width: 72px; height: 72px; display: block; margin: 0 0 16px; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,.22); }
     h1 { margin: 0 0 28px; font-size: 28px; letter-spacing: -.02em; }
     .download {
       display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
@@ -61,6 +62,27 @@
 </head>
 <body>
   <main>
+    <svg class="logo" viewBox="0 0 1024 1024" role="img" aria-label="Habeas Clockus">
+      <defs>
+        <linearGradient id="hc-bg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#3a86a8" />
+          <stop offset="1" stop-color="#1f5066" />
+        </linearGradient>
+      </defs>
+      <rect x="96" y="96" width="832" height="832" rx="190" fill="url(#hc-bg)" />
+      <circle cx="512" cy="512" r="300" fill="#ffffff" />
+      <g stroke="#2f6f8f" stroke-width="28" stroke-linecap="round">
+        <line x1="512" y1="252" x2="512" y2="304" />
+        <line x1="772" y1="512" x2="720" y2="512" />
+        <line x1="512" y1="772" x2="512" y2="720" />
+        <line x1="252" y1="512" x2="304" y2="512" />
+      </g>
+      <g stroke="#1f2933" stroke-linecap="round">
+        <line x1="512" y1="512" x2="685" y2="412" stroke-width="34" />
+        <line x1="512" y1="512" x2="382" y2="437" stroke-width="40" />
+      </g>
+      <circle cx="512" cy="512" r="36" fill="#1f2933" />
+    </svg>
     <h1>Habeas Clockus</h1>
 
     <a class="download" href="https://github.com/forceofseth/habeas-clockus/releases/latest/download/Habeas-Clockus-aarch64.dmg">
