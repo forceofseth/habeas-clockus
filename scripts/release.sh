@@ -16,6 +16,9 @@ VERSION="${VERSION#v}"
 TAG="v${VERSION}"
 REPO="forceofseth/habeas-clockus"
 ASSET="habeas-clockus-aarch64.app.tar.gz"
+# Stable (version-less) dmg name so the GitHub "latest/download" redirect always resolves
+# (the download site links to .../releases/latest/download/${DMG_ASSET}):
+DMG_ASSET="Habeas-Clockus-aarch64.dmg"
 # Stable URL that always points at the newest release's asset:
 URL="https://github.com/${REPO}/releases/latest/download/${ASSET}"
 
@@ -44,7 +47,7 @@ DMG="$(ls "$BUNDLE"/dmg/*.dmg 2>/dev/null | head -1 || true)"
 OUT="$(mktemp -d)"
 cp "$TARGZ" "$OUT/$ASSET"
 cp "$SIG"   "$OUT/$ASSET.sig"
-[ -n "$DMG" ] && cp "$DMG" "$OUT/Habeas-Clockus-${TAG}-aarch64.dmg"
+[ -n "$DMG" ] && cp "$DMG" "$OUT/$DMG_ASSET"
 
 # --- latest.json (public update manifest: version + signature + url only) ---
 SIGNATURE="$(cat "$SIG")"
@@ -62,7 +65,7 @@ echo "→ latest.json written"
 
 # --- publish ---
 ASSETS=("$OUT/$ASSET" "$OUT/$ASSET.sig" "$OUT/latest.json")
-[ -n "$DMG" ] && ASSETS+=("$OUT/Habeas-Clockus-${TAG}-aarch64.dmg")
+[ -n "$DMG" ] && ASSETS+=("$OUT/$DMG_ASSET")
 
 NOTES="Habeas Clockus ${TAG}
 

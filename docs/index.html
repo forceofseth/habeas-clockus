@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Habeas Clockus — Download</title>
+  <meta name="description" content="Habeas Clockus für macOS herunterladen — immer die neueste Version." />
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #181b22;
+      --fg: #e8eaed;
+      --muted: #9aa0aa;
+      --accent: #4f8cff;
+      --accent-hover: #6ba0ff;
+      --border: #262a33;
+      --code-bg: #11141a;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f5f6f8; --card: #ffffff; --fg: #1a1d23; --muted: #5a626e;
+        --accent: #2f6fe0; --accent-hover: #1f5fd0; --border: #e2e5ea; --code-bg: #f0f2f5;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; background: var(--bg); color: var(--fg);
+      font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    main {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+      max-width: 560px; width: 100%; padding: 40px; box-shadow: 0 8px 40px rgba(0,0,0,.18);
+    }
+    h1 { margin: 0 0 4px; font-size: 28px; letter-spacing: -.02em; }
+    .tagline { color: var(--muted); margin: 0 0 28px; }
+    .download {
+      display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
+      background: var(--accent); color: #fff; font-weight: 600; font-size: 17px;
+      padding: 14px 24px; border-radius: 10px; transition: background .15s;
+    }
+    .download:hover { background: var(--accent-hover); }
+    .download svg { width: 20px; height: 20px; fill: currentColor; }
+    .req { color: var(--muted); font-size: 14px; margin: 12px 0 0; }
+    .req a { color: var(--accent); }
+    h2 { font-size: 16px; margin: 32px 0 8px; }
+    ol { margin: 0; padding-left: 20px; color: var(--fg); }
+    ol li { margin-bottom: 6px; }
+    code {
+      background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px;
+      padding: 2px 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
+      word-break: break-all;
+    }
+    pre { margin: 8px 0 0; }
+    pre code { display: block; padding: 12px; }
+    footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+    footer a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Habeas Clockus</h1>
+    <p class="tagline">Zeiterfassung für den Mac.</p>
+
+    <a class="download" href="https://github.com/forceofseth/habeas-clockus/releases/latest/download/Habeas-Clockus-aarch64.dmg">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a1 1 0 0 1 1 1v9.59l3.3-3.3a1 1 0 1 1 1.4 1.42l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.42l3.3 3.3V4a1 1 0 0 1 1-1Zm-7 14a1 1 0 0 1 1 1v1h12v-1a1 1 0 1 1 2 0v2a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1Z"/></svg>
+      Download für macOS
+    </a>
+    <p class="req">
+      Benötigt einen Mac mit Apple Silicon (M-Serie).
+      &nbsp;·&nbsp;
+      <a href="https://github.com/forceofseth/habeas-clockus/releases/latest">Alle Releases ansehen</a>
+    </p>
+
+    <h2>Erstinstallation</h2>
+    <p>Die App ist ad-hoc-signiert, aber nicht Apple-notarisiert. macOS sperrt eine frisch heruntergeladene Kopie daher zunächst.</p>
+    <ol>
+      <li>DMG öffnen und die App nach <code>/Programme</code> ziehen.</li>
+      <li>Falls macOS „beschädigt“ meldet oder den Start blockiert, einmalig im Terminal ausführen:
+        <pre><code>xattr -dr com.apple.quarantine "/Applications/Habeas Clockus.app"</code></pre>
+      </li>
+      <li>Alternativ: Systemeinstellungen → Datenschutz &amp; Sicherheit → „Trotzdem öffnen“.</li>
+    </ol>
+
+    <footer>
+      Quellcode auf <a href="https://github.com/forceofseth/habeas-clockus">GitHub</a>.
+      Updates installiert die App nach der Erstinstallation automatisch.
+    </footer>
+  </main>
+</body>
+</html>
