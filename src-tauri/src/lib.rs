@@ -63,15 +63,22 @@ fn set_dock_icon() {
 // (debug) this is not installed, so the updater menu only exists in release.
 #[cfg(not(debug_assertions))]
 fn setup_menu(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    use tauri::menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder};
+    use tauri::menu::{AboutMetadataBuilder, MenuBuilder, MenuItemBuilder, SubmenuBuilder};
     use tauri::Emitter;
 
     let handle = app.handle();
+
+    // Show the app version in the "About Habeas Clockus" panel.
+    let about = AboutMetadataBuilder::new()
+        .name(Some("Habeas Clockus"))
+        .version(Some(handle.package_info().version.to_string()))
+        .build();
+
     let check = MenuItemBuilder::with_id("check-update", "Nach Updates suchen…").build(handle)?;
     let check_id = check.id().clone();
 
     let app_menu = SubmenuBuilder::new(handle, "Habeas Clockus")
-        .about(None)
+        .about(Some(about))
         .separator()
         .item(&check)
         .separator()
