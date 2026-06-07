@@ -12,9 +12,7 @@ afterEach(cleanup);
 
 // In-memory backend so the store never touches Tauri/localStorage during tests.
 const backend: FileBackend = {
-  read: async () => null,
   write: async () => {},
-  backup: async () => {},
 };
 
 const TODAY = '2026-06-29'; // Monday — the test week below is fully in the past

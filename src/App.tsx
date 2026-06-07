@@ -14,7 +14,6 @@ import {
 import { listen } from '@tauri-apps/api/event';
 
 import AbsenceWizard from './components/AbsenceWizard';
-import ConflictModal from './components/ConflictModal';
 import Header from './components/Header';
 import HolidaysPage from './components/HolidaysPage';
 import LoadingOverlay from './components/LoadingOverlay';
@@ -105,10 +104,9 @@ const Main: Component<{
     if (y !== currentYear) void ensureYear(y, false);
   });
 
-  // Re-check the file whenever the window regains focus — picks up changes a
-  // second device synced via the cloud (auto-reload, or conflict prompt).
+  // On focus, refresh holidays for the current calendar year in case the app was
+  // left open across midnight into a new year.
   const onFocus = () => {
-    void ts.checkExternal();
     void ensureYear(yearOf(todayKey()), false); // new calendar year if left open
   };
   const onVisible = () => {
@@ -138,10 +136,6 @@ const Main: Component<{
 
       <Show when={absenceOpen()}>
         <AbsenceWizard onClose={() => setAbsenceOpen(false)} />
-      </Show>
-
-      <Show when={ts.conflict()}>
-        <ConflictModal />
       </Show>
 
       <Show

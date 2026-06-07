@@ -53,62 +53,26 @@ export async function pickOpenFile(): Promise<string | null> {
   return typeof res === 'string' ? res : null;
 }
 
-// ── Backend (read / write / backup) ───────────────────────────────────────────
+// ── Backend (write) ───────────────────────────────────────────────────────────
 
 export interface FileBackend {
-  /** Current on-disk content, or null if missing/unreadable. */
-  read: () => Promise<string | null>;
   write: (json: string) => Promise<void>;
-  /** Write a timestamped backup copy (used before overwriting a conflict). */
-  backup: (json: string) => Promise<void>;
-}
-
-function timestamp(): string {
-  // Date is available in the webview (not a Workflow script); fine to use here.
-  return new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-}
-
-function backupPath(path: string): string {
-  const base = path.replace(/\.json$/i, '');
-  return `${base}.conflict-${timestamp()}.json`;
 }
 
 /**
- * Build the persistence backend for the active target. On desktop it reads/
- * writes the bound file; in a plain browser (dev) it falls back to localStorage.
+ * Build the persistence backend for the active target. On desktop it writes the
+ * bound file; in a plain browser (dev) it falls back to localStorage.
  */
 export function makeBackend(path: string | null): FileBackend {
   if (path) {
     return {
-      read: async () => {
-        try {
-          return await readFile(path);
-        } catch {
-          return null;
-        }
-      },
       write: (json) => writeFile(path, json),
-      backup: (json) => writeFile(backupPath(path), json),
     };
   }
   return {
-    read: async () => {
-      try {
-        return localStorage.getItem(STORAGE_KEY);
-      } catch {
-        return null;
-      }
-    },
     write: async (json) => {
       try {
         localStorage.setItem(STORAGE_KEY, json);
-      } catch {
-        /* storage unavailable */
-      }
-    },
-    backup: async (json) => {
-      try {
-        localStorage.setItem(`${STORAGE_KEY}:conflict-${timestamp()}`, json);
       } catch {
         /* storage unavailable */
       }

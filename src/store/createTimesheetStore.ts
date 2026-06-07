@@ -4,7 +4,6 @@ import { createStore, reconcile } from 'solid-js/store';
 import { addDays, todayKey, yearOf } from '../lib/date';
 import type { FileBackend } from '../lib/fileStore';
 import { buildHolidayMap, resolveRules } from '../lib/holidays';
-import { normalizeDoc } from '../lib/storage';
 import { isWorkingDay } from '../lib/workday';
 import type {
   DateKey,
@@ -29,51 +28,27 @@ function emptyEntry(): DayEntry {
 export type TimesheetStore = ReturnType<typeof createTimesheetStore>;
 
 export type SaveState = 'saved' | 'saving' | 'error';
-export interface Conflict {
-  theirsJson: string;
-}
-
-/** Canonical JSON form, so formatting/key-order differences don't read as changes. */
-function canonical(text: string | null): string | null {
-  if (text === null) return null;
-  try {
-    return JSON.stringify(normalizeDoc(JSON.parse(text)), null, 2);
-  } catch {
-    return null;
-  }
-}
 
 export function createTimesheetStore(initialDoc: TimesheetDoc, backend: FileBackend) {
   const [doc, setDoc] = createStore<TimesheetDoc>(initialDoc);
   const [saveState, setSaveState] = createSignal<SaveState>('saved');
-  const [conflict, setConflict] = createSignal<Conflict | null>(null);
 
-  // What we believe is currently on disk (canonical form).
-  let baseline = JSON.stringify(initialDoc, null, 2);
-
-  // Debounced, guarded persistence. Every change is written ~600 ms after you
-  // stop editing — but only if the file hasn't been changed by another device.
+  // Debounced persistence: every change is written ~600 ms after you stop
+  // editing. The app is single-device, so we just overwrite the file.
   let timer: ReturnType<typeof setTimeout> | undefined;
   let pending: string | null = null;
 
   const flush = async () => {
-    if (pending === null || conflict()) return;
+    if (pending === null) return;
     const json = pending;
     pending = null;
     try {
-      const disk = canonical(await backend.read());
-      if (disk !== null && disk !== baseline) {
-        // Another device wrote since our baseline → don't clobber it.
-        setConflict({ theirsJson: disk });
-        return;
-      }
       await backend.write(json);
-      baseline = json;
       setSaveState(pending === null ? 'saved' : 'saving');
     } catch {
       setSaveState('error');
     }
-    if (pending !== null && !conflict()) void flush();
+    if (pending !== null) void flush();
   };
 
   // The effect reads the whole document (so it tracks every nested property);
@@ -90,45 +65,6 @@ export function createTimesheetStore(initialDoc: TimesheetDoc, backend: FileBack
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => void flush(), 600);
   });
-
-  /** Check whether another device changed the file; reload or flag a conflict. */
-  async function checkExternal() {
-    if (conflict()) return;
-    const disk = canonical(await backend.read());
-    if (disk === null || disk === baseline) return;
-    const mine = JSON.stringify(doc, null, 2);
-    if (mine === baseline) {
-      // No local edits → safely adopt the other device's version.
-      setDoc(reconcile(normalizeDoc(JSON.parse(disk))));
-      baseline = disk;
-      setSaveState('saved');
-    } else {
-      setConflict({ theirsJson: disk });
-    }
-  }
-
-  /** Resolve a conflict: keep theirs (reload) or keep mine (backup theirs, overwrite). */
-  async function resolveConflict(choice: 'mine' | 'theirs') {
-    const c = conflict();
-    if (!c) return;
-    if (choice === 'theirs') {
-      setDoc(reconcile(normalizeDoc(JSON.parse(c.theirsJson))));
-      baseline = c.theirsJson;
-      setConflict(null);
-      setSaveState('saved');
-    } else {
-      try {
-        await backend.backup(c.theirsJson);
-        const mine = JSON.stringify(doc, null, 2);
-        await backend.write(mine);
-        baseline = mine;
-        setConflict(null);
-        setSaveState('saved');
-      } catch {
-        setSaveState('error');
-      }
-    }
-  }
 
   function ensureDay(date: DateKey) {
     if (!doc.days[date]) setDoc('days', date, emptyEntry());
@@ -282,9 +218,6 @@ export function createTimesheetStore(initialDoc: TimesheetDoc, backend: FileBack
   return {
     doc,
     saveState,
-    conflict,
-    checkExternal,
-    resolveConflict,
     setRange,
     addRange,
     removeRange,
