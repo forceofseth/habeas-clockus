@@ -51,7 +51,10 @@
       word-break: break-all;
     }
     pre { margin: 8px 0 0; }
-    pre code { display: block; padding: 12px; }
+    pre code {
+      display: block; padding: 12px; word-break: normal;
+      white-space: pre-wrap; overflow-wrap: anywhere;
+    }
     footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
     footer a { color: var(--accent); }
   </style>
